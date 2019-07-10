@@ -36,7 +36,7 @@ public class JvBeanDefinitionReader {
 
     public JvBeanDefinitionReader(String... locations){
         //1.通过URL定位找到其所对应的文件，然后转换为文件流 ->{相当于根据线索找到羊群，并将羊群从养羊人手里运到我们的世界(内存).}
-        InputStream is = this.getClass().getClassLoader().getResourceAsStream(locations[0].replace("classPath",""));
+        InputStream is = this.getClass().getClassLoader().getResourceAsStream(locations[0].replace("classpath:",""));
 
         try {
             config.load(is);
@@ -57,7 +57,7 @@ public class JvBeanDefinitionReader {
 
     private void doScanner(String scanPackage) {
         //将包路径转换为文件路径，实际就是把.替换成/就好了
-        URL url = this.getClass().getClassLoader().getResource("/"+scanPackage.replaceAll("\\.","/"));
+        URL url = this.getClass().getResource("/"+scanPackage.replaceAll("\\.","/"));
         File classPath = new File(url.getFile());
         for (File file:classPath.listFiles()) {
             if(file.isDirectory()){
@@ -87,7 +87,7 @@ public class JvBeanDefinitionReader {
         }
 
 
-        return null;
+        return beanDefinitions;
     }
 
     /**

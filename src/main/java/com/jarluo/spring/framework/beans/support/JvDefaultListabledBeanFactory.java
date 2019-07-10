@@ -14,8 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class JvDefaultListabledBeanFactory extends JvAbstractApplicationContext {
     /**
-     * 存储注册信息的BeanDefinition
+     * 存储注册信息的BeanDefinition，伪IOC容器
      */
-    protected final Map<String, JvBeanDefinition> beanDefinationMap = new ConcurrentHashMap<>(256);
+    protected final Map<String, JvBeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>(256);
 }
 
