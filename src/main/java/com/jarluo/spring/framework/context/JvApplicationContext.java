@@ -6,6 +6,7 @@ import com.jarluo.spring.framework.annotation.JvService;
 import com.jarluo.spring.framework.beans.JvBeanFactory;
 import com.jarluo.spring.framework.beans.JvBeanWrapper;
 import com.jarluo.spring.framework.beans.config.JvBeanDefinition;
+import com.jarluo.spring.framework.beans.config.JvBeanPostProcessor;
 import com.jarluo.spring.framework.beans.support.JvBeanDefinitionReader;
 import com.jarluo.spring.framework.beans.support.JvDefaultListabledBeanFactory;
 import com.sun.xml.internal.ws.org.objectweb.asm.ClassAdapter;
@@ -53,10 +54,14 @@ public class JvApplicationContext extends JvDefaultListabledBeanFactory implemen
         doRegisterBeanDefinitions(beanDefinitions);
 
         //4、对于不是延时加载的类，进行提前初始化->{TODO} 
-        doAutowired();
+        try {
+            doAutowired();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     // 只处理非延时加载的情况
-    private void doAutowired() {
+    private void doAutowired() throws Exception {
 
         for (Map.Entry<String,JvBeanDefinition> beanDefinitionEntry : super.beanDefinitionMap.entrySet()) {
             String beanName = beanDefinitionEntry.getKey();
@@ -73,18 +78,32 @@ public class JvApplicationContext extends JvDefaultListabledBeanFactory implemen
         }
     }
     @Override
-    public  Object getBean(Class<?> beanClass){
+    public  Object getBean(Class<?> beanClass) throws Exception {
 
         return getBean(beanClass.getName());
     }
 
     @Override
-    public Object getBean(String beanName) {
+    public Object getBean(String beanName) throws Exception {
         //DI伊始 ->{Spring分割好羊肉送到我们手里}
+
+
         //1.初始化->{解决循环依赖问题，另外将羊变成羊肉，保存在包装盒中。包装盒的标签是key=beanName，包装盒中的装的是羊肉value=new Instance()}
-        JvBeanWrapper jvBeanWrapper = instantiateBean(beanName,this.beanDefinitionMap.get(beanName));
+        Object instance = instantiateBean(beanName,this.beanDefinitionMap.get(beanName));
+
+        //通知器(真正的IOC注入前后) 工厂模式+策略模式--不需要我们自己new
+        //有些类需要实现initAware接口，需要监听回调 --设计层 ,而AOP是应用层
+        JvBeanPostProcessor jvBeanPostProcessor = new JvBeanPostProcessor();
+        jvBeanPostProcessor.postProcessBeforeInitialization(instance,beanName);
+
+
         //2.拿到BeanWrapper之后，把BeanWrapper保存到IOC容器中去
+        JvBeanWrapper jvBeanWrapper = new JvBeanWrapper(instance);
         this.factoryBeanInstanceCache.put(beanName,jvBeanWrapper);
+
+
+        jvBeanPostProcessor.postProcessBeforeInitialization(instance,beanName);
+
         //3.真正的注入 ->{此处我们可以类比为Spring将包装好的羊肉（beanWrapper）送到我们的手上}
         populateBean(beanName,new JvBeanDefinition(),jvBeanWrapper);
         return this.factoryBeanInstanceCache.get(beanName).getWrappedInstance();
@@ -125,7 +144,7 @@ public class JvApplicationContext extends JvDefaultListabledBeanFactory implemen
 
     }
 
-    private JvBeanWrapper instantiateBean(String beanName, JvBeanDefinition jvBeanDefinition) {
+    private Object instantiateBean(String beanName, JvBeanDefinition jvBeanDefinition) {
         //1.拿到实例化的对象的类名
         String className = jvBeanDefinition.getBeanClassName();
 
@@ -151,13 +170,6 @@ public class JvApplicationContext extends JvDefaultListabledBeanFactory implemen
             e.printStackTrace();
         }
 
-        //3.把这个对象封装到beanWrapper中
-
-        JvBeanWrapper jvBeanWrapper = new JvBeanWrapper(instance);
-
-        //4.把beanWrapper封装到IOC容器中
-
-
-        return jvBeanWrapper;
+        return instance;
     }
 }

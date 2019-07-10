@@ -9,9 +9,15 @@ import com.jarluo.spring.framework.context.JvApplicationContext;
 public class AppTest {
     public static void main(String[] args) {
         JvApplicationContext context = new JvApplicationContext("classpath:application.properties");
-        Object object = context.getBean("com.jarluo.spring.demo.action.MyAction");
-        Object serviceObject = context.getBean(QueryService.class);
-        System.out.println(object);
-        System.out.println(serviceObject);
+        try {
+            Object object = context.getBean("com.jarluo.spring.demo.action.MyAction");
+            Object serviceObject = context.getBean(QueryService.class);
+
+            System.out.println(object);
+            System.out.println(serviceObject);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }
