@@ -9,6 +9,5 @@ import com.jarluo.spring.framework.annotation.JvController;
  * @date: 2019/7/10 23:17
  */
 @JvController
-
 public class MyAction {
 }

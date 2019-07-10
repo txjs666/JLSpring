@@ -72,6 +72,11 @@ public class JvApplicationContext extends JvDefaultListabledBeanFactory implemen
             super.beanDefinitionMap.put(beanDefinition.getBeanClassName(),beanDefinition);
         }
     }
+    @Override
+    public  Object getBean(Class<?> beanClass){
+
+        return getBean(beanClass.getName());
+    }
 
     @Override
     public Object getBean(String beanName) {
